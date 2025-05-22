@@ -229,7 +229,7 @@ module Types (F : TYPE) = struct
   let lp_assignment_struct : lp_assignment_t typ =
     structure "lp_assignment_struct"
 
-  let lp_assignment_t = typedef lp_assignment_struct "lp_polynomial_t"
+  let lp_assignment_t = typedef lp_assignment_struct "lp_assignment_t"
 
   (* Interval assignment *)
 
