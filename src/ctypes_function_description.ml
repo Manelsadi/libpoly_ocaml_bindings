@@ -1,16 +1,7 @@
 open Ctypes
-open Ctypes_zarith
 
 module Functions (F : FOREIGN) = struct
   open F
-
-  module DyadicRational = struct
-    open Ctypes_type_description.DyadicRational
-
-    let to_string0 =
-      foreign "lp_dyadic_rational_to_string"
-        (ptr (lift_typ t) @-> returning (ptr char))
-  end
 
   module Ring = struct
     open Ctypes_type_description.Ring
@@ -22,15 +13,6 @@ module Functions (F : FOREIGN) = struct
     open Types_generated.UPolynomial
 
     let degree = foreign "lp_upolynomial_degree" (ptr t @-> returning size_t)
-
-    let unpack =
-      foreign "lp_upolynomial_unpack" (ptr t @-> ptr MPZ.t @-> returning void)
-
-    let construct =
-      foreign "lp_upolynomial_construct"
-        (ptr Ctypes_type_description.Ring.t
-        @-> size_t @-> ptr MPZ.t
-        @-> returning (ptr t))
 
     let construct_from_int =
       foreign "lp_upolynomial_construct_from_int"
@@ -306,6 +288,180 @@ module Functions (F : FOREIGN) = struct
 
     let hash =
       foreign "lp_integer_hash" (ptr (const lp_integer_t) @-> returning size_t)
+  end
+
+  module Rational = struct
+    open Types_generated
+
+    let construct =
+      foreign "lp_rational_construct" (ptr lp_rational_t @-> returning void)
+
+    let construct_from_div =
+      foreign "lp_rational_construct_from_div"
+        (ptr lp_rational_t
+        @-> ptr (const lp_integer_t)
+        @-> ptr (const lp_integer_t)
+        @-> returning void)
+
+    let construct_from_int =
+      foreign "lp_rational_construct_from_int"
+        (ptr lp_rational_t @-> long @-> ulong @-> returning void)
+
+    let construct_from_integer =
+      foreign "lp_rational_construct_from_integer"
+        (ptr lp_rational_t @-> ptr (const lp_integer_t) @-> returning void)
+
+    let construct_from_double =
+      foreign "lp_rational_construct_from_double"
+        (ptr lp_rational_t @-> double @-> returning void)
+
+    let construct_from_dyadic =
+      foreign "lp_rational_construct_from_dyadic"
+        (ptr lp_rational_t
+        @-> ptr (const lp_dyadic_rational_t)
+        @-> returning void)
+
+    let construct_copy =
+      foreign "lp_rational_construct_copy"
+        (ptr lp_rational_t @-> ptr (const lp_rational_t) @-> returning void)
+
+    let assign =
+      foreign "lp_rational_assign"
+        (ptr lp_rational_t @-> ptr (const lp_rational_t) @-> returning void)
+
+    let assign_int =
+      foreign "lp_rational_assign_int"
+        (ptr lp_rational_t @-> long @-> ulong @-> returning void)
+
+    let destruct =
+      foreign "lp_rational_destruct" (ptr lp_rational_t @-> returning void)
+
+    let to_string =
+      foreign "lp_rational_to_string"
+        (ptr (const lp_rational_t) @-> returning string)
+
+    let to_double =
+      foreign "lp_rational_to_double"
+        (ptr (const lp_rational_t) @-> returning double)
+
+    let sgn =
+      foreign "lp_rational_sgn" (ptr (const lp_rational_t) @-> returning int)
+
+    let cmp =
+      foreign "lp_rational_cmp"
+        (ptr (const lp_rational_t)
+        @-> ptr (const lp_rational_t)
+        @-> returning int)
+
+    let cmp_dyadic_rational =
+      foreign "lp_rational_cmp_dyadic_rational"
+        (ptr (const lp_rational_t)
+        @-> ptr (const lp_dyadic_rational_t)
+        @-> returning int)
+
+    let cmp_integer =
+      foreign "lp_rational_cmp_integer"
+        (ptr (const lp_rational_t)
+        @-> ptr (const lp_integer_t)
+        @-> returning int)
+
+    let swap =
+      foreign "lp_rational_swap"
+        (ptr lp_rational_t @-> ptr lp_rational_t @-> returning void)
+
+    let add =
+      foreign "lp_rational_add"
+        (ptr lp_rational_t
+        @-> ptr (const lp_rational_t)
+        @-> ptr (const lp_rational_t)
+        @-> returning void)
+
+    let add_integer =
+      foreign "lp_rational_add_integer"
+        (ptr lp_rational_t
+        @-> ptr (const lp_rational_t)
+        @-> ptr (const lp_integer_t)
+        @-> returning void)
+
+    let sub =
+      foreign "lp_rational_sub"
+        (ptr lp_rational_t
+        @-> ptr (const lp_rational_t)
+        @-> ptr (const lp_rational_t)
+        @-> returning void)
+
+    let neg =
+      foreign "lp_rational_neg"
+        (ptr lp_rational_t @-> ptr (const lp_rational_t) @-> returning void)
+
+    let inv =
+      foreign "lp_rational_inv"
+        (ptr lp_rational_t @-> ptr (const lp_rational_t) @-> returning void)
+
+    let mul =
+      foreign "lp_rational_mul"
+        (ptr lp_rational_t
+        @-> ptr (const lp_rational_t)
+        @-> ptr (const lp_rational_t)
+        @-> returning void)
+
+    let mul_2exp =
+      foreign "lp_rational_mul_2exp"
+        (ptr lp_rational_t
+        @-> ptr (const lp_rational_t)
+        @-> uint @-> returning void)
+
+    let pow =
+      foreign "lp_rational_pow"
+        (ptr lp_rational_t
+        @-> ptr (const lp_rational_t)
+        @-> uint @-> returning void)
+
+    let div_ =
+      foreign "lp_rational_div"
+        (ptr lp_rational_t
+        @-> ptr (const lp_rational_t)
+        @-> ptr (const lp_rational_t)
+        @-> returning void)
+
+    let div_2exp =
+      foreign "lp_rational_div_2exp"
+        (ptr lp_rational_t
+        @-> ptr (const lp_rational_t)
+        @-> uint @-> returning void)
+
+    let get_num =
+      foreign "lp_rational_get_num"
+        (ptr (const lp_rational_t) @-> ptr lp_integer_t @-> returning void)
+
+    let get_den =
+      foreign "lp_rational_get_den"
+        (ptr (const lp_rational_t) @-> ptr lp_integer_t @-> returning void)
+
+    let is_integer =
+      foreign "lp_rational_is_integer"
+        (ptr (const lp_rational_t) @-> returning int)
+
+    let ceiling =
+      foreign "lp_rational_ceiling"
+        (ptr (const lp_rational_t) @-> ptr lp_integer_t @-> returning void)
+
+    let floor =
+      foreign "lp_rational_floor"
+        (ptr (const lp_rational_t) @-> ptr lp_integer_t @-> returning void)
+
+    let hash =
+      foreign "lp_rational_hash" (ptr (const lp_rational_t) @-> returning size_t)
+
+    let hash_approx =
+      foreign "lp_rational_hash_approx"
+        (ptr (const lp_rational_t) @-> uint @-> returning size_t)
+  end
+
+  module Dyadic_rational = struct
+    open Types_generated
+
+    type t = lp_dyadic_rational_t ptr
   end
 
   module AlgebraicNumber = struct

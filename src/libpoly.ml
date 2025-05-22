@@ -1,18 +1,8 @@
 open Ctypes
-open Ctypes_zarith
+module CI = Cstubs_internals
+
+(* open Ctypes_zarith *)
 open Unsigned
-
-let to_string = coerce (ptr char) string
-let is1_int = Int.(equal one)
-
-module DyadicRational = struct
-  include Ctypes_type_description.DyadicRational
-  open Ctypes_bindings.Function.DyadicRational
-
-  let a x = getf !@x s#members#a |> addr |> MPZ.to_z
-  let n x = getf !@x s#members#n |> ULong.to_int
-  let to_string x = x |> to_string0 |> to_string
-end
 
 module DyadicInterval = struct
   include Types_generated.DyadicInterval
@@ -27,14 +17,6 @@ module Ring = struct
   include Ctypes_bindings.Function.Ring
 
   let lp_Z = !@lp_Z
-
-  let ref_count t =
-    getf !@t lp_int_ring_struct#members#ref_count |> Size_t.to_int
-
-  let is_prime t = getf !@t lp_int_ring_struct#members#is_prime |> is1_int
-  let modulus t = getf !@t lp_int_ring_struct#members#_M |> addr |> MPZ.to_z
-  let lb t = getf !@t lp_int_ring_struct#members#lb |> addr |> MPZ.to_z
-  let ub t = getf !@t lp_int_ring_struct#members#ub |> addr |> MPZ.to_z
 end
 
 module UPolynomial = struct
@@ -43,32 +25,37 @@ module UPolynomial = struct
 
   let degree p = degree p |> Unsigned.Size_t.to_int
 
-  let construct ring degree coeffs =
-    construct ring (Size_t.of_int degree) coeffs
-
   let construct_from_int ring degree coeffs =
     construct_from_int ring (Size_t.of_int degree) coeffs
 
   let construct_power ring degree coeff =
     construct_power ring (Size_t.of_int degree) coeff
-
-  let to_string x = x |> to_string0 |> to_string
 end
 
 module AlgebraicNumber = struct
   include Types_generated.AlgebraicNumber
   include Ctypes_bindings.Function.AlgebraicNumber
+end
 
-  let sgn_at_a t =
-    getf !@t lp_algebraic_number_struct#members#sgn_at_a |> is1_int
+module Integer = struct
+  open Ctypes_bindings
 
-  let sgn_at_b t =
-    getf !@t lp_algebraic_number_struct#members#sgn_at_b |> is1_int
+  type t = Type.lp_integer_t ptr
 
-  let interval t = getf !@t lp_algebraic_number_struct#members#_I |> addr
-  let f t = getf !@t lp_algebraic_number_struct#members#f
-  let to_string x = x |> to_string0 |> to_string
-  let make () = make ~finalise:(fun p -> p |> addr |> destruct) t |> addr
+  external construct_from_z : _ CI.fatptr -> Z.t -> unit
+    = "ml_lp_integer_construct_from_z"
+
+  external get_z : _ CI.fatptr -> Z.t = "ml_lp_integer_get_z"
+
+  let of_z z =
+    let p =
+      allocate_n ~finalise:Function.Integer.destruct ~count:1 Type.lp_integer_t
+    in
+    let (CI.CPointer pv) = p in
+    construct_from_z pv z;
+    p
+
+  let to_z (CI.CPointer p) = get_z p
 end
 
 module Rational = struct
@@ -76,17 +63,28 @@ module Rational = struct
 
   type t = Type.lp_rational_t ptr
 
-  let of_q = MPQ.of_q
-  let to_q = MPQ.to_q
+  external construct_from_div_z : _ CI.fatptr -> Z.t -> Z.t -> unit
+    = "ml_lp_rational_construct_from_div_z"
+
+  external get_num_z : _ CI.fatptr -> Z.t = "ml_lp_rational_get_num_z"
+  external get_den_z : _ CI.fatptr -> Z.t = "ml_lp_rational_get_den_z"
+
+  let of_q q =
+    let p =
+      allocate_n ~finalise:Function.Rational.destruct ~count:1
+        Type.lp_rational_t
+    in
+    let (CI.CPointer pv) = p in
+    construct_from_div_z pv (Q.num q) (Q.den q);
+    p
+
+  let to_q (CI.CPointer pv) = Q.make (get_num_z pv) (get_den_z pv)
 end
 
-module Integer = struct
-  open Ctypes_bindings.Type
+module Dyadic_rational = struct
+  open Ctypes_bindings
 
-  type t = lp_integer_t ptr
-
-  let of_z = MPZ.of_z
-  let to_z = MPZ.to_z
+  type t = Type.lp_dyadic_rational_t ptr
 end
 
 module Value = struct
@@ -96,11 +94,11 @@ module Value = struct
 
   type view =
     | Integer of Integer.t
-    | DyadicRational of DyadicRational.t
+    | Dyadic_rational of Dyadic_rational.t
     | Rational of Rational.t
     | Algebraic of AlgebraicNumber.t
-    | PlusInfinity
-    | MinusInfinity
+    | Plus_infinity
+    | Minus_infinity
 
   let view v =
     match !@(v |-> Type.Value.type_) with
@@ -109,31 +107,37 @@ module Value = struct
         assert false
     | LP_VALUE_INTEGER -> Integer (v |-> Type.Value.union |-> Type.Value.Union.z)
     | LP_VALUE_DYADIC_RATIONAL ->
-        DyadicRational !@(v |-> Type.Value.union |-> Type.Value.Union.dy_q)
+        Dyadic_rational (v |-> Type.Value.union |-> Type.Value.Union.dy_q)
     | LP_VALUE_RATIONAL ->
         Rational (v |-> Type.Value.union |-> Type.Value.Union.q)
     | LP_VALUE_ALGEBRAIC ->
         Algebraic !@(v |-> Type.Value.union |-> Type.Value.Union.a)
-    | LP_VALUE_PLUS_INFINITY -> PlusInfinity
-    | LP_VALUE_MINUS_INFINITY -> MinusInfinity
+    | LP_VALUE_PLUS_INFINITY -> Plus_infinity
+    | LP_VALUE_MINUS_INFINITY -> Minus_infinity
 
   let is_integer = Function.Value.is_integer
   let is_rational = Function.Value.is_rational
 
   let get_rational v =
-    let q = MPQ.make () in
+    let q =
+      allocate_n ~finalise:Function.Rational.destruct ~count:1
+        Type.lp_rational_t
+    in
+    Function.Rational.construct q;
     Function.Value.get_rational v q;
     q
 
   let to_rational_opt v = if is_rational v then Some (get_rational v) else None
-  let to_q_opt v = Option.map MPQ.to_q (to_rational_opt v)
+  let to_q_opt v = Option.map Rational.to_q (to_rational_opt v)
 
-  open Ctypes_bindings.Type
-  open Ctypes_bindings.Function
+  open Ctypes_bindings
+
+  let[@inline] alloc () : t =
+    allocate_n ~finalise:Function.Value.destruct ~count:1 Type.lp_value_t
 
   let[@inline] create () : t =
-    let v = Value.new_ LP_VALUE_NONE null in
-    Gc.finalise Value.destruct v;
+    let v = alloc () in
+    Function.Value.construct_none v;
     v
 
   let[@inline] unop op v1 =
@@ -147,34 +151,31 @@ module Value = struct
     v
 
   let of_int n =
-    let v = addr (make lp_value_t) in
-    Value.construct_int v (Signed.Long.of_int n);
-    Gc.finalise Value.destruct v;
+    let v = alloc () in
+    Function.Value.construct_int v (Signed.Long.of_int n);
     v
 
   let of_z z =
-    let v = addr (make lp_value_t) in
-    Value.construct v LP_VALUE_INTEGER (to_voidp (MPZ.of_z z));
-    Gc.finalise Value.destruct v;
+    let v = alloc () in
+    Function.Value.construct v LP_VALUE_INTEGER (to_voidp (Integer.of_z z));
     v
 
   let of_rational q =
-    let v = addr (make lp_value_t) in
-    Value.construct v LP_VALUE_RATIONAL (to_voidp q);
-    Gc.finalise Value.destruct v;
+    let v = alloc () in
+    Function.Value.construct v LP_VALUE_RATIONAL (to_voidp q);
     v
 
-  let of_q q = of_rational (MPQ.of_q q)
-  let sgn = Value.sgn
-  let add v1 v2 = binop Value.add v1 v2
-  let sub v1 v2 = binop Value.sub v1 v2
-  let neg v = unop Value.neg v
-  let mul v1 v2 = binop Value.mul v1 v2
-  let inv v = unop Value.inv v
-  let div v1 v2 = binop Value.div v1 v2
-  let pow v n = binop Value.pow v (Unsigned.UInt.of_int n)
-  let to_string = Value.to_string
-  let compare v1 v2 = Value.cmp v1 v2
+  let of_q q = of_rational (Rational.of_q q)
+  let sgn = Function.Value.sgn
+  let add v1 v2 = binop Function.Value.add v1 v2
+  let sub v1 v2 = binop Function.Value.sub v1 v2
+  let neg v = unop Function.Value.neg v
+  let mul v1 v2 = binop Function.Value.mul v1 v2
+  let inv v = unop Function.Value.inv v
+  let div v1 v2 = binop Function.Value.div v1 v2
+  let pow v n = binop Function.Value.pow v (Unsigned.UInt.of_int n)
+  let to_string = Function.Value.to_string
+  let compare v1 v2 = Function.Value.cmp v1 v2
 end
 
 module Variable = struct

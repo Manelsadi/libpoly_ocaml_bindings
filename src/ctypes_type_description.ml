@@ -1,72 +1,32 @@
 open Ctypes
-open Ctypes_zarith
 open Libpoly_structs
-
-module DyadicRational = struct
-  type s = lp_dyadic_rational_struct_0
-  type t = s structure
-
-  let t : t typ = lift_typ lp_dyadic_rational_struct_0
-
-  let s =
-    let field_0 =
-      field (lift_typ lp_dyadic_rational_struct_0) "a" (lift_typ MPZ.t)
-    in
-    let field_1 = field (lift_typ lp_dyadic_rational_struct_0) "n" ulong in
-    let () = seal (lift_typ lp_dyadic_rational_struct_0) in
-    object
-      method ctype = lp_dyadic_rational_struct_0
-
-      method members =
-        object
-          method a = field_0
-          method n = field_1
-        end
-    end
-end
 
 module Ring = struct
   type t = [ `lp_int_ring_t ] structure
 
-  let s : t typ = structure ""
-
-  let lp_int_ring_struct =
-    let field_0 = field s "ref_count" size_t in
-    let field_1 = field s "is_prime" int in
-    let field_2 = field s "M" (lift_typ MPZ.t) in
-    let field_3 = field s "lb" (lift_typ MPZ.t) in
-    let field_4 = field s "ub" (lift_typ MPZ.t) in
-    let () = seal s in
-    object
-      method ctype = s
-
-      method members =
-        object
-          method ref_count = field_0
-          method is_prime = field_1
-          method _M = field_2
-          method lb = field_3
-          method ub = field_4
-        end
-    end
-
+  let s : t typ = structure "lp_int_ring_struct"
   let t = typedef s "lp_int_ring_t"
 end
 
 module Types (F : TYPE) = struct
   open F
 
-  type lp_integer_t = MPZ.t abstract
+  type lp_integer_t = [ `lp_integer_t ] structure
 
-  let lp_integer_t = lift_typ MPZ.t
+  let lp_integer_t : lp_integer_t typ =
+    typedef (structure "lp_integer_struct") "lp_integer_t"
 
-  type lp_rational_t = MPQ.t abstract
+  let () = seal lp_integer_t
 
-  let lp_rational_t = lift_typ MPQ.t
+  type lp_rational_t = [ `lp_rational_t ] structure
 
-  type lp_dyadic_rational_t = DyadicRational.t
+  let lp_rational_t : lp_rational_t typ =
+    typedef (structure "lp_rational_struct") "lp_rational_t"
 
-  let lp_dyadic_rational_t = lift_typ DyadicRational.s#ctype
+  type lp_dyadic_rational_t = [ `lp_dyadic_rational_t ] structure
+
+  let lp_dyadic_rational_t : lp_dyadic_rational_t typ =
+    typedef (structure "lp_dyadic_rational_struct") "lp_dyadic_rational_t"
 
   module DyadicInterval = struct
     include DyadicInterval

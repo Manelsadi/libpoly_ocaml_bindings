@@ -13,8 +13,8 @@ depends: [
   "dune" {build & >= "3.7.0"}
   "ocamlfind" {build}
   "ctypes"
-  "ctypes-zarith"
   "ctypes-foreign"
+  "zarith"
 ]
 build: [
   make
