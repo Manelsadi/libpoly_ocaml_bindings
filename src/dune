@@ -32,6 +32,8 @@
                       "poly/assignment.h"
                       "poly/sign_condition.h"
                       "poly/feasibility_set.h"
+                      "poly/variable_db.h"
+                      "poly/variable_order.h"
                       "poly/rational_interval.h"))
     (type_description
       (instance Type)
