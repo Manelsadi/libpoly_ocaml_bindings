@@ -331,6 +331,7 @@ module Polynomial = struct
   let div ~ctx p1 p2 = binop div ~ctx p1 p2
   let resultant ~ctx p1 p2 = binop resultant ~ctx p1 p2
   let gcd ~ctx p1 p2 = binop gcd ~ctx p1 p2
+  let sgn = sgn
   let evaluate = evaluate
 
   let fold f p acc =
