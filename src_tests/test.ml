@@ -1,11 +1,10 @@
 open Libpoly
 
-let v  = AlgebraicNumber.make()
+let v = AlgebraicNumber.make ()
 let () = AlgebraicNumber.construct_zero v
-let () = print_endline(AlgebraicNumber.to_string v)
-
+let () = print_endline (AlgebraicNumber.to_string v)
 let p = UPolynomial.construct_power Ring.lp_Z 10 (Signed.Long.of_int 0)
-let () = print_endline(UPolynomial.to_string p)
+let () = print_endline (UPolynomial.to_string p)
 
 (* The following fails *)
 (* let () = UPolynomial.delete p *)
@@ -15,3 +14,42 @@ let () = print_endline(UPolynomial.to_string p)
 (* let coeffs = List.init 5 (fun i -> i)
  * let coeffs = Ctypes.CArray.(of_list Ctypes.int coeffs |> start)
  * let p = UPolynomial.construct_from_int Ring.lp_Z 2 coeffs *)
+
+let db = Variable.Db.create ()
+let order = Variable.Order.create ()
+let x = Variable.Db.new_variable db "x"
+let () = Variable.Order.push order x
+let y = Variable.Db.new_variable db "y"
+let () = Variable.Order.push order y
+let ctx = Polynomial.Context.create db order
+let p1 = Polynomial.create_simple ~ctx (Integer.of_z (Z.of_int 2)) x 1
+let () = print_endline (Polynomial.to_string p1)
+let p2 = Polynomial.create_simple ~ctx (Integer.of_z (Z.of_int 7)) y 4
+let () = print_endline (Polynomial.to_string p2)
+let p3 = Polynomial.add ~ctx p1 p2
+let () = print_endline (Polynomial.to_string p3)
+let p4 = Polynomial.mul ~ctx p3 p2
+let () = print_endline (Polynomial.to_string p4)
+
+let pconst n =
+  Polynomial.of_list ~ctx
+    [
+      Polynomial.Monomial.create ~ctx (Integer.of_z n) [];
+      Polynomial.Monomial.create ~ctx (Integer.of_z (Z.of_int 14)) [ (x, 3) ];
+      Polynomial.Monomial.create ~ctx (Integer.of_z (Z.of_int 14)) [ (y, 2) ];
+    ]
+
+let p5 = pconst (Z.of_int 14)
+let () = print_endline (Polynomial.to_string p5)
+let p6 = Polynomial.resultant ~ctx p4 p5
+let () = print_endline (Polynomial.to_string p6)
+
+let m =
+  let m = Assignment.create db in
+  Assignment.add m y (Value.of_z (Z.of_int 19));
+  m
+
+let rts = Polynomial.roots_isolate p6 m
+
+let () =
+  Array.iter (fun v -> Format.eprintf "root: %s@." (Value.to_string v)) rts
