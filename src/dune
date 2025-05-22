@@ -6,7 +6,7 @@
 (library
  (name libpoly_bindings)
  (public_name libpoly_bindings)
- (libraries ctypes ctypes-foreign libpoly_structs zarith)
+ (libraries ctypes ctypes-foreign zarith)
  (wrapped false)
  (private_modules
    Ctypes_bindings

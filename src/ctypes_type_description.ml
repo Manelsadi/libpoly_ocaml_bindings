@@ -1,5 +1,4 @@
 open Ctypes
-open Libpoly_structs
 
 module Ring = struct
   type t = [ `lp_int_ring_t ] structure
@@ -28,11 +27,12 @@ module Types (F : TYPE) = struct
   let lp_dyadic_rational_t : lp_dyadic_rational_t typ =
     typedef (structure "lp_dyadic_rational_struct") "lp_dyadic_rational_t"
 
-  module DyadicInterval = struct
-    include DyadicInterval
-
-    type s = t
+  module Dyadic_interval = struct
+    type s = [ `lp_dyadic_interval_t ] structure
     type t = s abstract
+
+    let t : s typ =
+      typedef (structure "lp_dyadic_interval_struct") "lp_dyadic_interval_t"
   end
 
   module UPolynomial = struct
@@ -55,7 +55,7 @@ module Types (F : TYPE) = struct
 
     let lp_algebraic_number_struct =
       let field_0 = field s "f" (ptr UPolynomial.t) in
-      let field_1 = field s "I" (lift_typ DyadicInterval.t) in
+      let field_1 = field s "I" Dyadic_interval.t in
       let field_2 = field s "sgn_at_a" int in
       let field_3 = field s "sgn_at_b" int in
       let () = seal s in

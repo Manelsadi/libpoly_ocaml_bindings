@@ -4,16 +4,6 @@ module Dyadic_rational : sig
   type t
 end
 
-module DyadicInterval : sig
-  type s
-  type t = s abstract
-
-  val t : t typ
-  val a_open : t ptr -> bool
-  val b_open : t ptr -> bool
-  val is_point : t ptr -> bool
-end
-
 module Ring : sig
   type t = [ `lp_int_ring_t ] Ctypes.structure
 

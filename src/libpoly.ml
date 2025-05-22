@@ -4,14 +4,6 @@ module CI = Cstubs_internals
 (* open Ctypes_zarith *)
 open Unsigned
 
-module DyadicInterval = struct
-  include Types_generated.DyadicInterval
-
-  let a_open x = x |> a_open |> Size_t.(equal one)
-  let b_open x = x |> b_open |> Size_t.(equal one)
-  let is_point x = x |> is_point |> Size_t.(equal one)
-end
-
 module Ring = struct
   include Ctypes_type_description.Ring
   include Ctypes_bindings.Function.Ring
