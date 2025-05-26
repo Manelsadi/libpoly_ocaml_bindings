@@ -939,6 +939,7 @@ module Functions (F : FOREIGN) = struct
         @-> ptr (const lp_interval_assignment_t)
         @-> ptr lp_interval_t @-> returning void)
 
+    
     let evaluate =
       foreign "lp_polynomial_evaluate"
         (ptr (const lp_polynomial_t)

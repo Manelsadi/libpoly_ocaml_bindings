@@ -154,6 +154,7 @@ module Polynomial : sig
   val resultant : ctx:Context.t -> t -> t -> t
   val gcd : ctx:Context.t -> t -> t -> t
   val evaluate : t -> Assignment.t -> Value.t
+  val sgn : t -> Assignment.t -> int
   val fold : (Context.t -> Monomial.t -> 'a -> 'a) -> t -> 'a -> 'a
   val of_list : ctx:Context.t -> Monomial.t list -> t
   val add : ctx:Context.t -> t -> t -> t
