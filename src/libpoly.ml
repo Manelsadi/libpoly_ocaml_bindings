@@ -333,6 +333,7 @@ module Polynomial = struct
   let gcd ~ctx p1 p2 = binop gcd ~ctx p1 p2
   let sgn = sgn
   let evaluate = evaluate
+  let reductum ~ctx p = unop reductum ~ctx p
 
   let fold f p acc =
     let acc = ref acc in

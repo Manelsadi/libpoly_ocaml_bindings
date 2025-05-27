@@ -163,4 +163,5 @@ module Polynomial : sig
   val mul : ctx:Context.t -> t -> t -> t
   val div : ctx:Context.t -> t -> t -> t
   val roots_isolate : t -> Assignment.t -> Value.t array
+  val reductum : ctx:Context.t -> t -> t
 end
