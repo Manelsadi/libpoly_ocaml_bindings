@@ -312,6 +312,8 @@ module Polynomial = struct
     op p v1;
     p
 
+    
+    
   let[@inline] binop op ~ctx v1 v2 =
     let p = create ~ctx in
     op p v1 v2;
@@ -336,6 +338,12 @@ module Polynomial = struct
   let reductum ~ctx p = unop reductum ~ctx p
   let eq = eq 
   let top_variable = top_variable 
+  let degree = degree 
+  let get_coefficient ~ctx p k =   
+    let q = create ~ctx in
+    let i = Unsigned.Size_t.of_int k in
+    get_coefficient q p i;
+    q
 
   let fold f p acc =
     let acc = ref acc in
