@@ -323,7 +323,7 @@ module Polynomial = struct
     ensure_order p;
     set_external p;
     p
-
+  let compare = Function.Polynomial.cmp
   let add ~ctx p1 p2 = binop add ~ctx p1 p2
   let sub ~ctx p1 p2 = binop sub ~ctx p1 p2
   let neg ~ctx p = unop neg ~ctx p
