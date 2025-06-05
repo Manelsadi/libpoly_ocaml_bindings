@@ -168,4 +168,5 @@ module Polynomial : sig
   val top_variable : t -> Variable.t 
   val degree : t -> int 
   val get_coefficient : ctx:Context.t -> t -> int -> t 
+  val compare : t -> t -> int 
 end
