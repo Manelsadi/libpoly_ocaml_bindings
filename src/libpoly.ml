@@ -336,6 +336,7 @@ module Polynomial = struct
   let sgn = sgn
   let evaluate = evaluate
   let reductum ~ctx p = unop reductum ~ctx p
+  let derivative ~ctx p = unop derivative ~ctx p 
   let eq = eq 
   let top_variable = top_variable 
   let degree = degree 
