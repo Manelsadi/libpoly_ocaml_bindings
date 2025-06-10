@@ -165,6 +165,7 @@ module Polynomial : sig
   val roots_isolate : t -> Assignment.t -> Value.t array
   val factor_square_free : t -> (t * int) array
   val reductum : ctx:Context.t -> t -> t
+  val derivative :  ctx:Context.t -> t -> t
   val eq : t -> t -> int 
   val top_variable : t -> Variable.t 
   val degree : t -> int 

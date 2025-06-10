@@ -334,10 +334,12 @@ module Polynomial = struct
   let sgn = sgn
   let evaluate = evaluate
   let reductum ~ctx p = unop reductum ~ctx p
-  let eq = eq
-  let top_variable = top_variable
-  let degree = degree
-  let get_coefficient ~ctx p k =
+  let derivative ~ctx p = unop derivative ~ctx p 
+  let eq = eq 
+  let top_variable = top_variable 
+  let degree = degree 
+
+  let get_coefficient ~ctx p k =   
     let q = create ~ctx in
     let i = Unsigned.Size_t.of_int k in
     get_coefficient q p i;
