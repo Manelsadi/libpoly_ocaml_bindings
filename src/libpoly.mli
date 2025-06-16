@@ -170,6 +170,9 @@ module Polynomial : sig
   val eq : t -> t -> int 
   val top_variable : t -> Variable.t 
   val degree : t -> int 
+  val is_constant : t -> int 
+  val is_zero : t -> int 
+
   val get_coefficient : ctx:Context.t -> t -> int -> t 
   val compare : t -> t -> int 
 end

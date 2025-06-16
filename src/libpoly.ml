@@ -339,6 +339,8 @@ module Polynomial = struct
   let eq = eq 
   let top_variable = top_variable 
   let degree = degree 
+  let is_constant = is_constant
+  let is_zero = is_zero 
 
   let get_coefficient ~ctx p k =   
     let q = create ~ctx in
