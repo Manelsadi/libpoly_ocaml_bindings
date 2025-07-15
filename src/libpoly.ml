@@ -312,8 +312,6 @@ module Polynomial = struct
     op p v1;
     p
 
-    
-    
   let[@inline] binop op ~ctx v1 v2 =
     let p = create ~ctx in
     op p v1 v2;
@@ -336,10 +334,10 @@ module Polynomial = struct
   let sgn = sgn
   let evaluate = evaluate
   let reductum ~ctx p = unop reductum ~ctx p
-  let eq = eq 
-  let top_variable = top_variable 
-  let degree = degree 
-  let get_coefficient ~ctx p k =   
+  let eq = eq
+  let top_variable = top_variable
+  let degree = degree
+  let get_coefficient ~ctx p k =
     let q = create ~ctx in
     let i = Unsigned.Size_t.of_int k in
     get_coefficient q p i;
@@ -367,4 +365,23 @@ module Polynomial = struct
       Value.destruct (tmp_roots +@ i)
     done;
     roots
+
+  external libpoly_utils_free : unit ptr -> unit
+    = "libpoly_utils_free"
+
+  let factor_square_free p =
+    let tmp_factors = allocate (ptr (ptr (lp_polynomial_t))) (from_voidp (ptr (lp_polynomial_t)) null) in
+    let tmp_multiplicities = allocate (ptr size_t) (from_voidp size_t null) in
+    let tmp_size = allocate size_t Unsigned.Size_t.zero in
+    factor_square_free p tmp_factors tmp_multiplicities tmp_size;
+    let tmp_size = Unsigned.Size_t.to_int !@tmp_size in
+    let r =
+      Array.init tmp_size (fun i ->
+        let p = !@(!@tmp_factors +@ i) in
+        let m = Unsigned.Size_t.to_int !@(!@tmp_multiplicities +@ i) in
+        (p, m))
+    in
+    libpoly_utils_free (to_voidp (!@tmp_factors));
+    libpoly_utils_free (to_voidp (!@tmp_multiplicities));
+    r
 end

@@ -45,7 +45,7 @@
     (generated_types Types_generated)
     (generated_entry_point Ctypes_bindings)
     )
- (foreign_stubs (language c) (names zarith_stubs))
+ (foreign_stubs (language c) (names zarith_stubs libpoly_utils))
 )
 
 (env (dev (flags (:standard -warn-error -A))))
